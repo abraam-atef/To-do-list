@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<title>to do list</title>
+	<link rel="stylesheet" href="all.css" type="text/css" media="all" />
+	<link rel="stylesheet" href="bootstrap.css" type="text/css" media="all" />
+	<script src="scroll.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+	<div class="container">
+		<h1 class="text-center mt-3 mb-1">to do list</h1>
+		<div class="form-floating">
+			<input id="inp" type="text" class="form-control" id="task" value="" placeholder="task" />
+			<label for="task">add task</label>
+		</div>
+		<div class="d-grid gab-2">
+			<button class="btn btn-outline-primary btn-lg my-3" id="adbtn" type="submit">add task</button>
+		</div>
+		<div class="d-grid gab-2">
+			<button class="btn btn-outline-primary btn-lg my-3" id="upbtn" onclick="upd(x)" type="submit">update task</button>
+		</div>
+	</div>
+
+
+	<ul class="container shadow bg-light p-1 rounded" id="tasks">
+
+	</ul>
+
+	<div class="rounded text-center container">
+		<div class="bg-info rounded">
+			<h1 class="d-inline" id="com"></h1><h1 class="d-inline">/</h1><h1 class="d-inline" id="total"></h1>
+		</div>
+	</div>
+	<div class="d-grid gab-2 my-2 container" id="clbtn">
+	</div>
+
+	<script src="all.js" type="text/javascript" charset="utf-8"></script>
+	<script src="paper.js" type="text/javascript" charset="utf-8"></script>
+	<script src="jquery-3.7.1.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="bootstrap.js" type="text/javascript" charset="utf-8"></script>
+
+	<script>
+		let inp = document.querySelector('#inp'),
+		tasks = document.querySelector('#tasks'),
+		upbtn = document.querySelector('#upbtn'),
+		clbtn = document.querySelector('#clbtn'),
+		adbtn = document.querySelector('#adbtn'),
+		x = "",
+		com = JSON.parse(localStorage.getItem("com")) || [],
+		data = JSON.parse(localStorage.getItem("task")) || [];
+
+		upbtn.style.display = "none";
+
+
+
+		adbtn.addEventListener('click', () => {
+			if (inp.value !== "") {
+				let ob = {
+					task: inp.value,
+					complete: false,
+				}
+				data.push(ob)
+				localStorage.setItem("task", JSON.stringify(data));
+				inp.value = "";
+				task();
+			}
+		})
+
+		function task() {
+			let task = "";
+			for (let i = 0; i < data.length; i++) {
+				if (data[i].complete === false) {
+					task += `
+					<div class="container my-2 d-flex justify-content-between bg-warning rounded my-1 p-1">
+					<div class="">
+					<button class="btn btn-success" onclick="done(${i})" type="submit"><i class="fa fa-check"></i></button>
+					<p class="d-inline">
+					${data[i].task}
+					</p>
+					</div>
+					<div class="">
+					<button class="btn btn-info" onclick="update(${i})" type="submit"><i class="fas fa-clipboard"></i></button>
+					<button class="btn btn-danger" onclick="del(${i})" type="submit"><i class="fas fa-trash"></i></button>
+					</div>
+					</div>
+					`;
+
+				} else {
+					task += `
+					<div style="opacity:0.5;" id="t${i}" class="container my-2 d-flex justify-content-between bg-light rounded my-1 p-1">
+					<div class="">
+					<button class="btn btn-success" onclick="done(${i})" type="submit"><i class="fa fa-check"></i></button>
+					<p class="d-inline" style="text-decoration: line-through;">
+					${data[i].task}
+					</p>
+					</div>
+					<div class="">
+					<button class="btn btn-info" onclick="update(${i})" type="submit"><i class="fas fa-clipboard"></i></button>
+					<button class="btn btn-danger" onclick="del(${i})" type="submit"><i class="fas fa-trash"></i></button>
+					</div>
+					</div>
+					`;
+
+
+				}
+				if (data.length > 1) {
+					clbtn.innerHTML = `
+					<button class="btn btn-danger" onclick="clearall()" type="submit">clear all (${data.length})</button>
+					`;
+				}
+
+				tasks.innerHTML = task;
+				document.querySelector("#total").innerHTML = data.length;
+				document.querySelector("#com").innerHTML = com.length;
+
+			}
+		}
+		task();
+		function done(i) {
+			data[i].complete = true;
+			localStorage.setItem("task", JSON.stringify(data));
+			com.push(data[i]);
+			localStorage.setItem("com", JSON.stringify(com));
+			task();
+
+		}
+		
+		function del(i) {
+			data.splice(i, 1);
+			localStorage.setItem("task", JSON.stringify(data));
+			task()
+		}
+
+		function update(i) {
+			x = i;
+			inp.value = data[i].task;
+			inp.focus();
+
+			upbtn.style.display = "block";
+			adbtn.style.display = "none";
+		}
+
+		function upd(i) {
+			data[x].task = inp.value;
+			data[x].complete = false;
+			upbtn.style.display = "none";
+			adbtn.style.display = "block";
+			localStorage.setItem("task", JSON.stringify(data));
+			inp.value = "";
+			com.splice(data[x], 1);
+			localStorage.setItem("com", JSON.stringify(com));
+			task();
+		}
+		
+		function clearall() {
+			localStorage.clear();
+			data = [];
+			clbtn.innerHTML = '';
+			task();
+		}
+
+	</script>
+
+</body>
+</html>
